@@ -10,9 +10,9 @@ session = "1AZWarzgBuxQ0-aioaIlPwwMcXEHKxWIoidYTLWn0X1pGKeQYqQkd8QwSORpRU821YgSC
 SOURCE_CHANNEL = "@SlimeChkGroup"
 TARGET_CHANNEL = "@Duhok65"
 
-# ========== تەنها پەیامەکانی ئەم ناوە ==========
-ALLOWED_DEV = "@RimuruCHK"  # تەنها پەیامەکانی ئەم کەسە دەنێردرێت
-# =============================================
+# ========== تەنها ئەم ناردەرە ==========
+ALLOWED_SENDER = "SlimeChkBot"  # ناوی ناردەری بەبێ @
+# =====================================
 
 def format_card_data(text):
     cc_match = re.search(r'(\d{15,16})\s*\|\s*(\d{2})\s*\|\s*(\d{2,4})\s*\|\s*(\d{3,4})', text)
@@ -53,7 +53,7 @@ async def handler(event):
     msg = event.message
     original_text = msg.text or ""
 
-    # پشتگوێخستنی وێنە و لینک
+    # 1. پشتگوێخستنی وێنە و لینک
     if msg.media:
         return
     
@@ -61,24 +61,26 @@ async def handler(event):
     if re.search(url_pattern, original_text):
         return
 
-    # پشتگوێخستنی N/A
+    # 2. پشتگوێخستنی N/A
     if "Bank: N/A" in original_text or "Country: N/A" in original_text or "Type: N/A" in original_text:
         return
 
-    # ========== تەنها پەیامەکانی @RimuruCHK ==========
-    if ALLOWED_DEV not in original_text:
+    # 3. ========== تەنها پەیامەکانی ئەدمین ==========
+    sender = await event.get_sender()
+    if sender is None or sender.username != ALLOWED_SENDER:
         return
     # ===============================================
 
-    # گۆڕینی ناوەکان بۆ @warven_24
+    # 4. گۆڕینی ناوەکان بۆ @warven_24
     original_text = original_text.replace("@About_Warnix", "@warven_24")
     original_text = original_text.replace("@Warrixx", "@warven_24")
     original_text = original_text.replace("@Warnisx", "@warven_24")
     original_text = original_text.replace("@About_Warnisx", "@warven_24")
 
+    # 5. فۆرماتکردن و ناردن
     new_text = format_card_data(original_text)
     await client.send_message(TARGET_CHANNEL, new_text)
 
-print(f"Bot is running... (تەنها پەیامەکانی {ALLOWED_DEV} دەنێردرێت بۆ @Duhok65)")
+print(f"Bot is running... (تەنها پەیامەکانی @{ALLOWED_SENDER} دەنێردرێت بۆ @Duhok65)")
 client.start()
 client.run_until_disconnected()
