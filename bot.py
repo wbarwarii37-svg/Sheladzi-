@@ -11,7 +11,7 @@ SOURCE_CHANNEL = "@SlimeChkGroup"
 TARGET_CHANNEL = "@Duhok65"
 
 # ========== تەنها ئەم ناردەرە ==========
-ALLOWED_SENDER = "SlimeChkBot"  # ناوی ناردەری بەبێ @
+ALLOWED_SENDER = "SlimeChkBot"  # ئەدمینی چەناڵ
 # =====================================
 
 def format_card_data(text):
@@ -71,16 +71,22 @@ async def handler(event):
         return
     # ===============================================
 
-    # 4. گۆڕینی ناوەکان بۆ @warven_24
+    # 4. ========== تەنها پەیامەکانی Reply ==========
+    # ئەگەر پەیامەکە وەڵامی کەسێکی تر نەبوو، پشتگوێی بخە
+    if not msg.is_reply:
+        return
+    # ==============================================
+
+    # 5. گۆڕینی ناوەکان بۆ @warven_24
     original_text = original_text.replace("@About_Warnix", "@warven_24")
     original_text = original_text.replace("@Warrixx", "@warven_24")
     original_text = original_text.replace("@Warnisx", "@warven_24")
     original_text = original_text.replace("@About_Warnisx", "@warven_24")
 
-    # 5. فۆرماتکردن و ناردن
+    # 6. فۆرماتکردن و ناردن
     new_text = format_card_data(original_text)
     await client.send_message(TARGET_CHANNEL, new_text)
 
-print(f"Bot is running... (تەنها پەیامەکانی @{ALLOWED_SENDER} دەنێردرێت بۆ @Duhok65)")
+print(f"Bot is running... (تەنها وەڵامەکانی @{ALLOWED_SENDER} کە Reply بن، دەنێردرێت بۆ @Duhok65)")
 client.start()
 client.run_until_disconnected()
