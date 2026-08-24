@@ -9,19 +9,14 @@ session = "1AZWarzgBuxQ0-aioaIlPwwMcXEHKxWIoidYTLWn0X1pGKeQYqQkd8QwSORpRU821YgSC
 
 SOURCE_CHANNEL = "@SlimeChkGroup"
 TARGET_CHANNEL = "@Duhok65"
-
-# ========== تەنها ئەم ناردەرە (ئەدمین) ==========
 ALLOWED_SENDER = "SlimeChkBot"
-# ================================================
 
 def format_card_data(text):
-    # دەستنیشانکردنی کارت
     cc_match = re.search(r'(\d{15,16})\s*\|\s*(\d{2})\s*\|\s*(\d{2,4})\s*\|\s*(\d{3,4})', text)
     if cc_match:
         cc, month, year, cvv = cc_match.groups()
         bin_num = cc[:6]
     else:
-        # ئەگەر کارت نەدۆزرایەوە، بۆتەکە پەیامەکە پشتگوێ دەخات (دەنێردرێتەوە بەبێ فۆرمات)
         return text
 
     bank_match = re.search(r'Bank:\s*(.+)', text, re.IGNORECASE)
@@ -67,33 +62,24 @@ async def handler(event):
     if "Bank: N/A" in original_text or "Country: N/A" in original_text or "Type: N/A" in original_text:
         return
 
-    # 3. ========== تەنها پەیامەکانی ئەدمین ==========
+    # 3. تەنها پەیامەکانی ئەدمین
     sender = await event.get_sender()
     if sender is None or sender.username != ALLOWED_SENDER:
         return
-    # ===============================================
 
-    # 4. ========== تەنها وەڵامەکان (Reply) ==========
-    if not msg.is_reply:
-        return
-    # ===============================================
-
-    # 5. ========== تەنها پەیامەکانی کە کارتی تێدایە ==========
-    # ئەگەر کارت لە دەقەکەدا نەدۆزرایەوە، پشتگوێی بخە
+    # 4. تەنها پەیامەکانی کە کارتی تێدایە
     if not re.search(r'(\d{15,16})\s*\|\s*(\d{2})\s*\|\s*(\d{2,4})\s*\|\s*(\d{3,4})', original_text):
         return
-    # =======================================================
 
-    # 6. گۆڕینی ناوەکان بۆ @warven_24
+    # 5. گۆڕینی ناوەکان
     original_text = original_text.replace("@About_Warnix", "@warven_24")
     original_text = original_text.replace("@Warrixx", "@warven_24")
     original_text = original_text.replace("@Warnisx", "@warven_24")
     original_text = original_text.replace("@About_Warnisx", "@warven_24")
 
-    # 7. فۆرماتکردن و ناردن
     new_text = format_card_data(original_text)
     await client.send_message(TARGET_CHANNEL, new_text)
 
-print(f"Bot is running... (تەنها وەڵامەکانی @{ALLOWED_SENDER} کە کارتی تێدایە، دەنێردرێت بۆ @Duhok65)")
+print(f"Bot is running... (هەموو پەیامەکانی @{ALLOWED_SENDER} کە کارتی تێدایە، تەنانەت بەبێ Reply، دەنێردرێت بۆ @Duhok65)")
 client.start()
 client.run_until_disconnected()
