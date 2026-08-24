@@ -5,13 +5,13 @@ from telethon.sessions import StringSession
 # ========== ڕێکخستنەکان ==========
 api_id = 33774652
 api_hash = "c438941d8f43a0ff59fcc4b3f3c2fb42"
-session = "1ApWapzMBu7hz-BUMCTEjbC3t3zhPhDubVBihygXIVGzxds9frt9vjLcVD1Nv_8kDD7R6Rkm5vI39-CFIgyvE9jWG4jOUK9YAVaShnjVWU8nSDe9IVCHwS5euDRw8M1RCgH589y4c-mWolHC_Kn9p5DzrqwLZrItxMQCxxW-5i5JleM1Ju4KL-G_UejLh5hwtARciZlsstCfWWWHqQ9T26oC-RYzzK1rWlIrOTQCJOBAbRw8ajfXaDQBGHeIJxv8HWdJNbvAljzz-oUFIPzLHo8YPWyTkKHOIycpSrjHfV4WGDCadb0D2S67vxOssTLMlKx7nFT8NeVqyQj1j6ugdEv6f1Gg37lc="
+session = "1AZWarzgBuxQ0-aioaIlPwwMcXEHKxWIoidYTLWn0X1pGKeQYqQkd8QwSORpRU821YgSC3svKav8TeQwxtfpK1Eolxt_ADEg8tVnWV1ApziV3QOoc5ZTJWhD4oo8YsDfnCPy1hF8OO-GI9IOH0YggSGykM8QamZR3D8WEZVg4KiBIIxeuOAS9u38QWFfUNJTlJCgGL9rSWS3SJ2dZutG2zdFhYM0gRRi8jXIejA8NlkH5gASq9SJHSMcdkeF9a6e3dqyqZGKDRwXQIc5ZVT4ejdIgdhHm1GEE76ecw2hM6U8Ojypz36iR_1Tf_0aQIVcS9Yy3vP2RFWqZsQRYnYQq8_rseVUjvd0="
 
 SOURCE_CHANNEL = "@SlimeChkGroup"
 TARGET_CHANNEL = "@Duhok65"
 
 # ========== تەنها پەیامەکانی ئەم ناوە ==========
-ALLOWED_DEV = "@RimuruCHK"  # تەنها پەیامەکانی ئەم کەسە دەنێردرێت
+ALLOWED_DEV = "@RimuruCHK"
 # =============================================
 
 def format_card_data(text):
@@ -53,7 +53,6 @@ async def handler(event):
     msg = event.message
     original_text = msg.text or ""
 
-    # 1. پشتگوێخستنی وێنە و لینک
     if msg.media:
         return
     
@@ -61,23 +60,19 @@ async def handler(event):
     if re.search(url_pattern, original_text):
         return
 
-    # 2. پشتگوێخستنی N/A
     if "Bank: N/A" in original_text or "Country: N/A" in original_text or "Type: N/A" in original_text:
         return
 
-    # 3. ========== فلتری سەرەکی: تەنها پەیامەکانی DevBy @RimuruCHK ==========
-    # ئەگەر ناوی ALLOWED_DEV لە پەیامەکەدا نەبوو، پشتگوێی بخە
+    # ========== تەنها ئەم کەسە ==========
     if ALLOWED_DEV not in original_text:
         return
-    # ====================================================================
+    # ===================================
 
-    # 4. گۆڕینی ناوە ناخوازراوەکان بۆ @warven_24
     original_text = original_text.replace("@About_Warnix", "@warven_24")
     original_text = original_text.replace("@Warrixx", "@warven_24")
     original_text = original_text.replace("@Warnisx", "@warven_24")
     original_text = original_text.replace("@About_Warnisx", "@warven_24")
 
-    # 5. فۆرماتکردن و ناردن
     new_text = format_card_data(original_text)
     await client.send_message(TARGET_CHANNEL, new_text)
 
