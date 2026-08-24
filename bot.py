@@ -11,7 +11,7 @@ SOURCE_CHANNEL = "@SlimeChkGroup"
 TARGET_CHANNEL = "@Duhok65"
 
 # ========== تەنها پەیامەکانی ئەم ناوە ==========
-ALLOWED_DEV = "@RimuruCHK"
+ALLOWED_DEV = "@RimuruCHK"  # تەنها پەیامەکانی ئەم کەسە دەنێردرێت
 # =============================================
 
 def format_card_data(text):
@@ -53,6 +53,7 @@ async def handler(event):
     msg = event.message
     original_text = msg.text or ""
 
+    # پشتگوێخستنی وێنە و لینک
     if msg.media:
         return
     
@@ -60,14 +61,16 @@ async def handler(event):
     if re.search(url_pattern, original_text):
         return
 
+    # پشتگوێخستنی N/A
     if "Bank: N/A" in original_text or "Country: N/A" in original_text or "Type: N/A" in original_text:
         return
 
-    # ========== تەنها ئەم کەسە ==========
+    # ========== تەنها پەیامەکانی @RimuruCHK ==========
     if ALLOWED_DEV not in original_text:
         return
-    # ===================================
+    # ===============================================
 
+    # گۆڕینی ناوەکان بۆ @warven_24
     original_text = original_text.replace("@About_Warnix", "@warven_24")
     original_text = original_text.replace("@Warrixx", "@warven_24")
     original_text = original_text.replace("@Warnisx", "@warven_24")
