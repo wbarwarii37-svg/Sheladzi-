@@ -9,10 +9,12 @@ session = "1ApWapzMBu7hz-BUMCTEjbC3t3zhPhDubVBihygXIVGzxds9frt9vjLcVD1Nv_8kDD7R6
 
 SOURCE_CHANNEL = "@SlimeChkGroup"
 TARGET_CHANNEL = "@Duhok65"
-# ===================================
+
+# ========== تەنها ئەم ناوە بنێرە ==========
+ALLOWED_USERNAME = "@SlimeChkBot"  # گۆڕدرا بۆ SlimeChkBot
+# ==========================================
 
 def format_card_data(text):
-    # گەڕان بۆ کارت: ڕێگەدان بە ساڵی 2 یان 4 ژمارەیی
     cc_match = re.search(r'(\d{15,16})\s*\|\s*(\d{2})\s*\|\s*(\d{2,4})\s*\|\s*(\d{3,4})', text)
     if cc_match:
         cc, month, year, cvv = cc_match.groups()
@@ -59,7 +61,16 @@ async def handler(event):
     if re.search(url_pattern, original_text):
         return
 
-    # گۆڕینی هەموو ناوە ناخوازراوەکان بۆ @warven_24
+    # پشتگوێخستنی N/A
+    if "Bank: N/A" in original_text or "Country: N/A" in original_text or "Type: N/A" in original_text:
+        return
+
+    # ========== تەنها ئەم کەسە ==========
+    if ALLOWED_USERNAME not in original_text:
+        return
+    # ===================================
+
+    # گۆڕینی ناوەکان بۆ @warven_24
     original_text = original_text.replace("@About_Warnix", "@warven_24")
     original_text = original_text.replace("@Warrixx", "@warven_24")
     original_text = original_text.replace("@Warnisx", "@warven_24")
@@ -68,6 +79,6 @@ async def handler(event):
     new_text = format_card_data(original_text)
     await client.send_message(TARGET_CHANNEL, new_text)
 
-print("Bot is running... (سەرچاوە: @SlimeChkGroup، ئامانج: @Duhok65، سێشنی نوێ)")
+print(f"Bot is running... (تەنها پەیامەکانی {ALLOWED_USERNAME} دەنێردرێت بۆ @Duhok65)")
 client.start()
 client.run_until_disconnected()
