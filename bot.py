@@ -9,10 +9,12 @@ session = "1ApWapzMBu7hz-BUMCTEjbC3t3zhPhDubVBihygXIVGzxds9frt9vjLcVD1Nv_8kDD7R6
 
 SOURCE_CHANNEL = "@SlimeChkGroup"
 TARGET_CHANNEL = "@Duhok65"
-# ===================================
+
+# ========== تەنها پەیامەکانی ئەم ناوە ==========
+ALLOWED_DEV = "@RimuruCHK"  # تەنها پەیامەکانی ئەم کەسە دەنێردرێت
+# =============================================
 
 def format_card_data(text):
-    # گەڕان بۆ کارت
     cc_match = re.search(r'(\d{15,16})\s*\|\s*(\d{2})\s*\|\s*(\d{2,4})\s*\|\s*(\d{3,4})', text)
     if cc_match:
         cc, month, year, cvv = cc_match.groups()
@@ -51,7 +53,7 @@ async def handler(event):
     msg = event.message
     original_text = msg.text or ""
 
-    # پشتگوێخستنی وێنە و لینک
+    # 1. پشتگوێخستنی وێنە و لینک
     if msg.media:
         return
     
@@ -59,21 +61,26 @@ async def handler(event):
     if re.search(url_pattern, original_text):
         return
 
-    # ========== فلتری N/A ==========
-    # ئەگەر Bank, Country, Type هەریەکێکیان N/A بوو، پەیامەکە پشتگوێ بخرێت
+    # 2. پشتگوێخستنی N/A
     if "Bank: N/A" in original_text or "Country: N/A" in original_text or "Type: N/A" in original_text:
         return
-    # ================================
 
-    # گۆڕینی هەموو ناوە ناخوازراوەکان بۆ @warven_24
+    # 3. ========== فلتری سەرەکی: تەنها پەیامەکانی DevBy @RimuruCHK ==========
+    # ئەگەر ناوی ALLOWED_DEV لە پەیامەکەدا نەبوو، پشتگوێی بخە
+    if ALLOWED_DEV not in original_text:
+        return
+    # ====================================================================
+
+    # 4. گۆڕینی ناوە ناخوازراوەکان بۆ @warven_24
     original_text = original_text.replace("@About_Warnix", "@warven_24")
     original_text = original_text.replace("@Warrixx", "@warven_24")
     original_text = original_text.replace("@Warnisx", "@warven_24")
     original_text = original_text.replace("@About_Warnisx", "@warven_24")
 
+    # 5. فۆرماتکردن و ناردن
     new_text = format_card_data(original_text)
     await client.send_message(TARGET_CHANNEL, new_text)
 
-print("Bot is running... (پەیامەکانی N/A نەنێردرێت)")
+print(f"Bot is running... (تەنها پەیامەکانی {ALLOWED_DEV} دەنێردرێت بۆ @Duhok65)")
 client.start()
 client.run_until_disconnected()
