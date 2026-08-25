@@ -14,17 +14,17 @@ TARGET_CHANNEL = "@Cc428Card"         # ئامانج (چەناڵی خۆت)
 
 client = TelegramClient(StringSession(SESSION_STRING), API_ID, API_HASH)
 
-def extract_cc_bank_country(text):
+def extract_cards(text):
     """
-    ژمارەی کارت، بانک و وڵات لە دەقەکەدا دەدۆزێتەوە.
-    گەڕاندنەوەی لیستێک لە فەرهەنگ (هەر کارتێک و زانیارییەکانی)
+    هەموو کارتەکان و زانیارییەکانیان (بانک و وڵات) لە دەقەکەدا دەدۆزێتەوە.
+    گەڕاندنەوەی لیستێک لە فەرهەنگ.
     """
     results = []
-    # جیاکردنەوەی پەیامەکە بە ڕیزە بەتاڵەکان (هەر بەشێک کارتێکە)
+    # جیاکردنەوەی پەیامەکە بە ڕیزە بەتاڵەکان
     blocks = re.split(r'\n\s*\n', text)
     
     for block in blocks:
-        # دۆزینەوەی ژمارەی کارت (١٥ یان ١٦ ژمارە، دەکرێت بە | جیا بکرێتەوە)
+        # دۆزینەوەی ژمارەی کارت (١٥ یان ١٦ ژمارە)
         cc_match = re.search(r'(\b\d{15,16}\b)', block)
         if not cc_match:
             continue
@@ -33,11 +33,24 @@ def extract_cc_bank_country(text):
         
         # دۆزینەوەی بانک (Bank: ...)
         bank_match = re.search(r'Bank\s*:\s*(.+?)(?:\n|$)', block, re.IGNORECASE)
-        bank = bank_match.group(1).strip() if bank_match else "N/A"
+        if bank_match:
+            bank = bank_match.group(1).strip()
+        else:
+            # ئەگەر بانک نەدۆزرایەوە، بڕوانە ئایا "N/A" هەیە لە دوای ژمارەکەدا
+            if re.search(r'N/A\s*N/A', block):
+                bank = "N/A"
+            else:
+                bank = "N/A"
         
         # دۆزینەوەی وڵات (Country: ...)
         country_match = re.search(r'Country\s*:\s*(.+?)(?:\n|$)', block, re.IGNORECASE)
-        country = country_match.group(1).strip() if country_match else "N/A"
+        if country_match:
+            country = country_match.group(1).strip()
+        else:
+            if re.search(r'N/A\s*N/A', block):
+                country = "N/A"
+            else:
+                country = "N/A"
         
         results.append({
             "cc": cc_num,
@@ -52,20 +65,19 @@ async def handler(event):
     msg = event.message
     try:
         original_text = msg.text or ""
-        cards = extract_cc_bank_country(original_text)
+        cards = extract_cards(original_text)
         
         if not cards:
-            # ئەگەر هیچ کارتێک نەدۆزرایەوە، پەیامەکە فڕێبدە و هیچ مەنێرە
             print("⏭️ هیچ کارتێک نەدۆزرایەوە، پەیامەکە فڕێدرا.")
             return
         
-        # دروستکردنی پەیامی نوێ (هەر کارتێک بەم شێوەیە)
+        # دروستکردنی پەیامی نوێ
         output_lines = []
         for card in cards:
             output_lines.append(f"💳 {card['cc']}")
             output_lines.append(f"🏦 {card['bank']}")
             output_lines.append(f"🌍 {card['country']}")
-            output_lines.append("")  # ڕیزی بەتاڵ بۆ جیاکردنەوە
+            output_lines.append("")  # ڕیزی بەتاڵ
         
         output_text = "\n".join(output_lines).strip()
         
