@@ -1,76 +1,81 @@
 import asyncio
 import re
-import os
 from telethon import TelegramClient, events
 from telethon.sessions import StringSession
 
 # ================== ڕێکخستنەکان ==================
-API_ID = int(os.getenv("API_ID", 33774652))
-API_HASH = os.getenv("API_HASH", "c438941d8f43a0ff59fcc4b3f3c2fb42")
-SESSION_STRING = os.getenv("SESSION_STRING", "1AZWarzgBu5kZeJjoXsUl26R4vl8Z7CtKLNbejoE6xJ9IpQJvCcf_vB_X9YhC3WM34WQx9KXFnEVHAKR4Gvg4E7I6wh8hBJ_5UUUqSbljF1hJUqtPKCvvyDY_27OulPpfn_gqY4QQGB8erMherkUCgAOX3jrtHnqV6kECO6BhGk4EN0XLC5VWUvYShY954HPMQV5XkkjR5LwY4q6y5fJwmo1jI_ClIty3KT-Yd85jsDoNuL7zD6L5iYkzP_QDqg_3xa8wZnU6LBNbfMy9hf9jn_LySWuYqBhRMhWc1Sfc39bpSI33W_Xtk47NLFeMmwVPDZv20dLYgQ4m0nDtfNIdUW1BNQ13KgQ=")
+API_ID = 33790522
+API_HASH = "00e4131295f55452e143c06099c1ddae"
 
-SOURCE_CHANNEL = "@AdvancedScraper"   # سەرچاوە
-TARGET_CHANNEL = "@Cc428Card"         # ئامانج
+SESSION_STRING = "1ApWapzMBu4Y3MqRS0V1rAt4LTWWDNc1nQ-7RjQe0_9TjhYnuH37imYewBUlKyAQKjhYCLmqxGeDLCuyxs74MByvvM_ZI4YO0CN_9pu3JUFDjf2mXWkNVAdVN6kkTWzmTbXLiLzXTxaMIH65YUSECfTX-m-RKa6RaVC6LdwtMq-9aWV8hid6Fzgz5qxHnqUH7QLjn7ZshfpVufhut_pBbOQQBSLPiMfp00bFDAe1dell8pie3R4SDabuVGaAXCPZC2gt9peBdR4AgriM6Z0Z02KouMh8NgZOmw5Nt6fciEvYFgpGTOx_kmMh-yk1NCFSd3rMz2xY-9HTFu9REcz40H3ssa51IJ50="
+
+# 🔴 گۆڕدرا بۆ ناوە نوێکان
+SOURCE_CHANNEL = "@kroabscrap"    # سەرچاوە
+TARGET_CHANNEL = "@Cc428Kurd"     # ئامانج
 # ====================================================
 
 client = TelegramClient(StringSession(SESSION_STRING), API_ID, API_HASH)
 
-# فەنکشنی پشکنینی کارت: ئەگەر ژمارەی کارتی تێدا نەبوو، ڕەتیدەکاتەوە
-def contains_card(text):
-    if not text:
-        return False
-    return bool(re.search(r'\d{13,19}', text))
-
-# فەنکشنی پاککردنەوە: هەموو ستێرەکان و هێما زیادەکان لادەبات
-def clean_text(text):
-    if not text:
-        return ""
-    # لابردنی هەموو ستێرەکان (*)
-    text = text.replace("*", "")
-    # لابردنی کاراکتەری ` دوای ژمارە
-    text = re.sub(r"(\d+)`", r"\1", text)
-    # لابردنی بۆشایی زیادە لە سەرەتا و کۆتایی
-    text = text.strip()
-    return text
+def extract_card_info(text):
+    """
+    کارت، بانک و وڵات لە دەقەکەدا دەدۆزێتەوە.
+    گەڕاندنەوەی لیستێک لە هەموو کارتەکان.
+    """
+    results = []
+    blocks = re.split(r'\n\s*\n', text)
+    
+    for block in blocks:
+        cc_match = re.search(r'(\b\d{15,16}\b)', block)
+        if not cc_match:
+            continue
+        
+        cc_num = cc_match.group(1)
+        
+        bank_match = re.search(r'Bank\s*[:=]\s*(.+?)(?:\n|$)', block, re.IGNORECASE)
+        bank = bank_match.group(1).strip() if bank_match else "N/A"
+        
+        country_match = re.search(r'Country\s*[:=]\s*(.+?)(?:\n|$)', block, re.IGNORECASE)
+        country = country_match.group(1).strip() if country_match else "N/A"
+        
+        results.append({
+            "cc": cc_num,
+            "bank": bank,
+            "country": country
+        })
+    
+    return results
 
 @client.on(events.NewMessage(chats=SOURCE_CHANNEL))
 async def handler(event):
-    msg = event.message
     try:
-        original_text = msg.text or ""
+        text = event.message.text or ""
+        cards = extract_card_info(text)
         
-        # پشکنین: ئەگەر کارتی تێدا نەبوو، بە تەواوی هیچ نەنێرە
-        if not contains_card(original_text):
+        if not cards:
+            print("⏭️ هیچ کارتێک نەدۆزرایەوە، پەیامەکە فڕێدرا.")
             return
-
-        # پاککردنەوەی تەکست (لابردنی ستێرەکان و هێماکان)
-        cleaned_text = clean_text(original_text)
-
-        media = msg.media
-
-        if media:
-            file_path = await client.download_media(media)
-            if file_path:
-                # تەنها تەکستی پاککراوە وەک کاپشن بنێرە
-                await client.send_file(TARGET_CHANNEL, file_path, caption=cleaned_text)
-                os.remove(file_path)
-                print("✅ پەیامی میدیا + کاپشنی سادە نێردرا.")
-            else:
-                if cleaned_text:
-                    # بەبێ فۆرمات و ستێرە دەنێردرێت
-                    await client.send_message(TARGET_CHANNEL, cleaned_text)
-                    print("✅ تەنها تەکست (سادە) نێردرا.")
-        else:
-            if cleaned_text:
-                # بەبێ فۆرمات و ستێرە دەنێردرێت
-                await client.send_message(TARGET_CHANNEL, cleaned_text)
-                print("✅ پەیامی تەکستی (سادە) نێردرا.")
+        
+        output = []
+        for card in cards:
+            output.append(f"💳 {card['cc']}")
+            output.append(f"🏦 {card['bank']}")
+            output.append(f"🌍 {card['country']}")
+            output.append("")
+        
+        final_text = "\n".join(output).strip()
+        
+        if final_text:
+            await client.send_message(TARGET_CHANNEL, final_text)
+            print(f"✅ {len(cards)} کارت نێردران بۆ @Cc428Kurd.")
+    
     except Exception as e:
         print(f"❌ هەڵە: {e}")
 
 async def main():
     await client.start()
-    print("🚀 بۆت کاردەکات! تەنها کارتەکان بە شێوەی سادە دەنێردرێن.")
+    print("🚀 سکرێپتەکە کاردەکات...")
+    print(f"📡 سەرچاوە: {SOURCE_CHANNEL}")
+    print(f"🎯 ئامانج: {TARGET_CHANNEL}")
     await client.run_until_disconnected()
 
 if __name__ == "__main__":
